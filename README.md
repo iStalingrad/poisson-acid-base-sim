@@ -1,1 +1,2 @@
-# poisson-acid-base-sim
+generate contour plot cd C:\Users\bleac\OneDrive\Documents\GitHub\poisson-acid-base-sim
+python src\plot_contour.py data\20250609_161553\multi_sweep_results.csv -o data\20250609_161553\contour_clearing.png
