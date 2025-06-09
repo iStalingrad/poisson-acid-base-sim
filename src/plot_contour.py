@@ -20,6 +20,7 @@ def main():
         "csvfile",
         help="Path to the CSV (lambda_b,lambda_a,clearing_fraction)"
     )
+    parser.add_argument(
         "--out-plot", "-o",
         default="contour_clearing.png",
         help="Filename for the output PNG"
