@@ -6,7 +6,7 @@ Monte Carlo Poisson-based simulation of acid/base clearing in resist voxels.
 
 Each voxel gets a Poisson(λ_b) draw of base molecules and
 a Poisson(λ_a) draw of acid molecules.  A voxel is considered
-‘cleared’ if acids >= bases.  This script reports the fraction
+cleared if acids >= bases.  This script reports the fraction
 of voxels cleared.
 
 Usage:
