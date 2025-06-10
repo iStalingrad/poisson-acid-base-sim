@@ -1,56 +1,57 @@
-#!/usr/bin/env python3
-"""
-plot_contour.py
-
-Read the multi-sweep CSV and draw a contour (topographic) plot:
-  • x-axis: λ_a (acid means)
-  • y-axis: λ_b (base means)
-  • contours/color = clearing_fraction
-"""
-
+import os
+import glob
+import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
-import os
+
+def find_latest_csv():
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    data_dir  = os.path.join(repo_root, "data")
+    csv_paths = glob.glob(os.path.join(data_dir, "*", "*.csv"))
+    if not csv_paths:
+        raise FileNotFoundError(f"No CSV files found under {data_dir!r}")
+    return max(csv_paths, key=os.path.getmtime)
 
 def main():
     parser = argparse.ArgumentParser(description="Contour plot of clearing fraction")
     parser.add_argument(
-        "csvfile",
-        help="Path to the CSV (lambda_b,lambda_a,clearing_fraction)"
+        "--csvfile", "-c",
+        default=None,
+        help="Path to CSV; if omitted, auto-pick the newest in ../data/"
     )
     parser.add_argument(
         "--out-plot", "-o",
-        default="contour_clearing.png",
-        help="Filename for the output PNG"
+        default=None,
+        help="Output filename for the contour PNG"
     )
     args = parser.parse_args()
 
-    # 1) Load
-    df = pd.read_csv(args.csvfile)
+    # pick CSV
+    csvfile = args.csvfile or find_latest_csv()
+    print(f"Reading data from: {csvfile}")
+    df = pd.read_csv(csvfile)
 
-    # 2) Pivot into a grid
-    #    rows = lambda_b, columns = lambda_a, values = clearing_fraction
+    # build the grid
     pivot = df.pivot(index="lambda_b", columns="lambda_a", values="clearing_fraction")
-
-    # 3) Build mesh
     X, Y = np.meshgrid(pivot.columns.values, pivot.index.values)
     Z = pivot.values
 
-    # 4) Plot contours
+    # plot
     plt.figure()
-    # filled contours
     cp = plt.contourf(X, Y, Z)
     plt.colorbar(cp, label="Clearing fraction")
-    plt.xlabel("Mean acid per voxel (λₐ)")
-    plt.ylabel("Mean base per voxel (λ_b)")
-    plt.title("Clearing fraction: contour map")
-    plt.tight_layout()
+    plt.xlabel("λₐ (acid mean)")
+    plt.ylabel("λ_b (base mean)")
+    plt.title("Clearing fraction contour")
 
-    # 5) Save & show
-    plt.savefig(args.out_plot)
-    print(f"✓ Contour plot saved to {args.out_plot}")
+    # decide where to save
+    out_folder = os.path.dirname(csvfile)
+    default_name = "contour_clearing.png"
+    out_plot = args.out_plot or os.path.join(out_folder, default_name)
+
+    plt.savefig(out_plot)
+    print(f"✓ Contour plot saved to: {out_plot}")
     plt.show()
 
 if __name__ == "__main__":
